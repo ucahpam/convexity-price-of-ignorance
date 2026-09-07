@@ -13,7 +13,7 @@ else:
     import parameters_vanilla_call as mod
 from PDE_Solver.hjb_mixed import FBVP, Solver
 
-FIXED = -2.4   # the fixed control for the linear companion run
+FIXED = -2.4   
 
 mesh = Mesh()
 with XDMFFile(sorted(glob.glob('meshes/square/*005*.xdmf'))[0]) as f:
