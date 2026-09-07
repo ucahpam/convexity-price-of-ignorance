@@ -1,7 +1,3 @@
-"""
-plot_band.py -- the uncertainty premium: sup minus inf, vanilla vs power.
-Run:  docker exec -it -w /opt/FEISol feisol-demos python3 /shared/plot_band.py
-"""
 import glob
 import matplotlib
 matplotlib.use('Agg')
