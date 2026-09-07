@@ -1,11 +1,3 @@
-"""
-plot_delta_surface.py -- the paper's Figure 7 analogue:
-3D surface of the DELTA DIFFERENCE  d(V_sup - V_inf)/dS  over (y,z),
-side by side for the vanilla call and the power call.
-Usage: python3 /shared/plot_delta_surface.py
-Reads the four existing runs; no new solves.
-Output: /shared/delta_diff_surfaces.png
-"""
 import glob
 import matplotlib
 matplotlib.use('Agg')
