@@ -1,9 +1,11 @@
-"""band_peak.py -- read the call band peak for a GIVEN mesh resolution.
-Reads the sup and inf checkpoints from the mesh-specific output directory
-(not the hardcoded 005), so it works for the convergence study.
-
+"""
+band_peak.py: reads the peak call band at a given mesh resolution, for
+the mesh-refinement convergence study (Section 5.1). The mesh name is
+passed as an argument, and the checkpoints are read from the matching
+resolution's output directory, so the same script serves every mesh in
+the refinement sequence.
 Run inside the container, passing the mesh name (01, 005, 0025, ...):
-    docker exec -it -w /opt/FEISol feisol-demos python3 /shared/band_peak.py 01
+    docker exec -it -w /opt/FEISol feisol-demos python3 band_peak.py 01
 """
 import sys, glob
 import numpy as np
@@ -19,6 +21,7 @@ with XDMFFile(mesh_file) as f:
 V = FunctionSpace(mesh, 'CG', 1)
 
 def load(exp):
+    # Read the final-time (t=0) value function from the run's checkpoint
     u = Function(V)
     path = f'out/{exp}/square/{mesh_name}/v.xdmf'
     for name in ['value_func', 'v', 'u', 'w']:
@@ -29,7 +32,8 @@ def load(exp):
         except Exception:
             continue
     raise SystemExit(f'could not read {path}')
-
+    
+# Peak band is the largest pointwise gap between worst and best case
 sup = load('vanilla_call_sup')
 inf = load('vanilla_call_inf')
 band = sup - inf
