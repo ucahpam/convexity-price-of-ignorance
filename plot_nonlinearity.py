@@ -1,16 +1,3 @@
-"""
-plot_nonlinearity.py -- the paper's Figure 5(b) analogue:
-difference between the NONLINEAR worst-case solution and the LINEAR
-evolution with a FIXED control lambda = -2.4 (the interval's endpoint).
-If the problem were secretly linear the difference would vanish;
-the structure of the difference IS the measured effect of nonlinearity.
-Runs one extra solve: a control set collapsed to the single point -2.4
-(control_set_size=1 => the HJB sup is over one option => linear PDE).
-Usage (inside container, from /opt/FEISol):
-  python3 /shared/plot_nonlinearity.py vanilla_call    # or vanilla_power
-Reads the existing <exp>_sup run; runs fixed-lambda companion; plots
-difference surface -> /shared/nonlinearity_<exp>.png
-"""
 import sys, glob
 import matplotlib
 matplotlib.use('Agg')
