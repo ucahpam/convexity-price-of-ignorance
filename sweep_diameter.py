@@ -1,15 +1,3 @@
-"""
-sweep_diameter.py -- the paper's Figure 6 analogue:
-V_inf, V_sup AND Delta_inf, Delta_sup measured AT A FIXED POINT,
-plotted against the DIAMETER of the control set (symmetric, centred at
-lambda = -2; the paper centres at -1.25). Diameter 0 = a single fixed
-lambda: the two curves start together and fan out as ignorance grows --
-exactly the paper's two-panel figure.
-Measurement point: at-the-money, mid variance: z*=0.5,
-y* = ln(K) - rc*z* (so S = K there).
-Usage: python3 /shared/sweep_diameter.py vanilla_call   # or vanilla_power
-Output: /shared/diameter_gaps_<exp>.png + a printed table.
-"""
 import sys, glob
 import matplotlib
 matplotlib.use('Agg')
@@ -38,7 +26,6 @@ with XDMFFile(sorted(glob.glob('meshes/square/*005*.xdmf'))[0]) as f:
 V = FunctionSpace(mesh, 'CG', 1)
 xy = mesh.coordinates()
 
-# measurement vertex: nearest to (y*, z*) with S=K at z*=0.5
 zstar = 0.5
 ystar = np.log(K) - rc * zstar
 istar = int(np.argmin((xy[:, 0] - ystar)**2 + (xy[:, 1] - zstar)**2))
