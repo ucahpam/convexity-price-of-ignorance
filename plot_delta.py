@@ -34,7 +34,7 @@ fig, ax = plt.subplots(1, 2, figsize=(13, 5))
 zs, tolz = 0.5, 0.03
 for exp in exps:
     w = load(exp)
-    delta = project(S_inv * w.dx(0), V)     # (1/S) dw/dy, P1-projected
+    delta = project(S_inv * w.dx(0), V)     
     dvals = delta.compute_vertex_values(mesh)
     print(f'{exp}: Delta range [{dvals.min():.4f}, {dvals.max():.4f}]')
     if exp == exps[0]:
