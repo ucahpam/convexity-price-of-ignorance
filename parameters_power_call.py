@@ -1,11 +1,12 @@
 """
-parameters_power_call.py -- POWER CALL, Docker-debugged version.
-The NON-piecewise-linear payoff Max asked for:
+parameters_power_call.py: powered call with fixed degree p=2:
     Lambda(S) = max(S - K, 0)^2 / K
-Quadratic above the strike (genuine curvature: Lambda'' = 2/K > 0),
-C^1 smooth at the strike (slope rises continuously from 0),
-normalised by 1/K to keep magnitudes comparable to a vanilla.
-Only the payoff and the pinned-edge data differ from the vanilla call.
+Strictly convex above the strike (Lambda'' = 2/K > 0) and C^1 at the
+strike (the slope rises continuously from zero), normalised by 1/K to
+keep magnitudes comparable to the vanilla call (Section 5.3). Only the
+payoff and the pinned-edge data differ from the vanilla call. The
+variable-degree version used for the convexity sweep is in
+parameters_power_general.py.
 """
 import numpy as np
 from dolfin import Expression, Constant, SubDomain, near, PETScKrylovSolver
@@ -34,16 +35,20 @@ class Parameters(ParametersBase):
 
         rc = self.rho / np.sqrt(1.0 - self.rho**2)
         self.rc = rc
-        # POWER payoff: quadratic above K, C^1 at K (degree=3: curvier data)
+        # Powered payoff Lambda(S) = max(S-K,0)^2 / K, with S = exp(y + rc*z)
         self.ft = Expression(
             'pow(fmax(exp(x[0] + rc*x[1]) - K, 0.0), 2) / K',
             degree=3, K=self.K, rc=rc)
-
+        
+        # Isotropic diffusion after the shear of Section 4.1:
+        # a(z) = (xi*sqrt(1-rho^2)/2)*z, vanishing at the degenerate edge z=0.
         def diffusion(alpha):
             coeff = self.xi * np.sqrt(1.0 - self.rho**2) / 2.0
             return Expression('c*fmax(x[1], 0.0)', degree=1, c=coeff)
         self.__dict__['diffusion'] = diffusion
-
+        
+        # y-drift bracket of the transformed operator: the lambda term ~ sqrt(z)
+        # so it vanishes at z=0. Solver slot 'adv_x' (x[0]) is the thesis's y.
         def adv_y(alpha):
             return Expression(
                 '-( -r + kappa*gamma*rho/xi'
@@ -52,7 +57,9 @@ class Parameters(ParametersBase):
                 degree=1, r=self.r, kappa=self.kappa, gamma=self.gamma,
                 xi=self.xi, rho=self.rho, a=alpha)
         self.__dict__['adv_x'] = adv_y
-
+        
+        # z-drift bracket: the lambda term likewise carries sqrt(z).
+        # Solver slot 'adv_y' (x[1]) is the thesis's z
         def adv_z(alpha):
             return Expression(
                 '-( -kappa*gamma*sqrt(1.0-rho*rho)/xi + kappa*x[1]'
@@ -61,9 +68,9 @@ class Parameters(ParametersBase):
                 xi=self.xi, rho=self.rho, a=alpha)
         self.__dict__['adv_y'] = adv_z
 
-        def lin(alpha):  return Constant(self.r)
+        def lin(alpha):  return Constant(self.r)  # zeroth-order discount term -rV
         self.__dict__['lin'] = lin
-        def RHSt(alpha): return Constant(0.0)
+        def RHSt(alpha): return Constant(0.0) # no source term
         self.__dict__['RHSt'] = RHSt
 
     def set_boundary_conditions(self, mesh):
@@ -71,7 +78,8 @@ class Parameters(ParametersBase):
         ymin, zmin = coords.min(0);  ymax, zmax = coords.max(0)
         tol = 1e-10
         rc = self.rho / np.sqrt(1.0 - self.rho**2)
-
+        
+        # Identify the four edges of the truncated rectangular domain
         class LowS(SubDomain):
             def inside(self, x, on_boundary):
                 return on_boundary and near(x[0], ymin, tol)
@@ -86,9 +94,12 @@ class Parameters(ParametersBase):
                 return on_boundary and near(x[1], 0.0, tol)
 
         self.omegas = {0: LowS(), 1: HighS(), 2: HighV(), 3: ZeroV()}
+        # Boundary simplification (Section 5.5): all four edges imposed as
+        # Dirichlet conditions carrying payoff data, in place of the mixed
+        # Dirichlet-Robin set of the reference scheme.
         self.regions = {"Dirichlet": [0, 1, 2, 3], "Robin": [], "RobinTime": []}
-
-        # pinned edges carry the POWER payoff; Lambda(0) = 0 like the call
+        
+        # Each edge pinned to the powered payoff; Lambda(0) = 0 as for the call.
         payoff_edge = Expression(
             'pow(fmax(exp(x[0] + rc*x[1]) - K, 0.0), 2) / K',
             degree=3, K=self.K, rc=rc)
