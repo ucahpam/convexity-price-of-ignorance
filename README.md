@@ -8,7 +8,7 @@ Mathematics).
 The thesis prices European options under the Heston stochastic-volatility
 model when the market price of volatility risk λ is known only to lie in
 a compact interval, following the worst-case framework of Jaroszkowski &
-Jensen (2023). The worst- and best-case prices are the solutions of a
+Jensen (2023). The worst and best case prices are the solutions of a
 nonlinear Hamilton–Jacobi–Bellman equation, solved with the monotone
 finite element scheme of the FEISol library. This repository contains
 the problem-specific layer written for the thesis: the contract
