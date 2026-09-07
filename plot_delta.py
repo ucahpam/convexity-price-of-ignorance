@@ -50,7 +50,7 @@ for exp in exps:
 ax[1].set_xlabel('S'); ax[1].set_ylabel('Delta')
 ax[1].legend(); ax[1].set_title(f'Delta vs S along z={zs} — band ends compared')
 plt.tight_layout()
-tag = exps[0].replace('_sup', '').replace('_inf', '')   # e.g. vanilla_power
+tag = exps[0].replace('_sup', '').replace('_inf', '')   
 outfile = f'/shared/delta_comparison_{tag}.png'
 plt.savefig(outfile, dpi=150)
 print('saved', outfile)
