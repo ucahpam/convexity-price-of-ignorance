@@ -1,9 +1,11 @@
 """
-parameters_vanilla_put.py -- EUROPEAN PUT, Docker-debugged version.
-Identical machinery to the call; only the payoff and boundary DATA change:
-  1. payoff:  Lambda(S) = max(K - S, 0)
-  2. low-S Dirichlet value = K   (a put on a worthless stock is worth ~K)
-  3. pinned edges carry the PUT payoff
+parameters_vanilla_put.py: European put under the uncertain-Heston
+worst-case model. The operator, control set and solver are identical to
+the call, only the payoff and the boundary data differ:
+  1. payoff Lambda(S) = max(K - S, 0);
+  2. the low-S Dirichlet value is K (as S -> 0 the put is worth the
+     discounted strike);
+  3. the pinned edges carry the put payoff.
 """
 import numpy as np
 from dolfin import Expression, Constant, SubDomain, near, PETScKrylovSolver
@@ -32,11 +34,9 @@ class Parameters(ParametersBase):
 
         rc = self.rho / np.sqrt(1.0 - self.rho**2)
         self.rc = rc
-        # CHANGE 1: PUT payoff  max(K - S, 0),  S = exp(y + rc*z)
         self.ft = Expression('fmax(K - exp(x[0] + rc*x[1]), 0.0)',
                              degree=2, K=self.K, rc=rc)
 
-        # scalar isotropic diffusion (debugging fix: NOT a tuple)
         def diffusion(alpha):
             coeff = self.xi * np.sqrt(1.0 - self.rho**2) / 2.0
             return Expression('c*fmax(x[1], 0.0)', degree=1, c=coeff)
@@ -85,15 +85,13 @@ class Parameters(ParametersBase):
 
         self.omegas = {0: LowS(), 1: HighS(), 2: HighV(), 3: ZeroV()}
 
-        # all-Dirichlet first-run simplification; empty keys must exist
         self.regions = {"Dirichlet": [0, 1, 2, 3], "Robin": [], "RobinTime": []}
 
-        # CHANGES 2+3: pinned edges carry the PUT payoff; low-S edge = K
         payoff_edge = Expression('fmax(K - exp(x[0] + rc*x[1]), 0.0)',
                                  degree=2, K=self.K, rc=rc)
         self.RHS_bound = {
-            0: Constant(self.K),   # cheapest stock: put worth ~K
-            1: payoff_edge,        # priciest stock: payoff ~ 0 there anyway
+            0: Constant(self.K),   
+            1: payoff_edge,        
             2: payoff_edge,
             3: payoff_edge,
         }
