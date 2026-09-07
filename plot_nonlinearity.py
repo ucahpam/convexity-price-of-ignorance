@@ -32,10 +32,8 @@ def read_final(exp):
             continue
     raise SystemExit(f'could not read {exp}; run the {exp} solve first')
 
-# 1) the nonlinear worst case (already solved)
 nl = read_final(f'{base}_sup')
 
-# 2) the linear fixed-lambda companion (solve now, 1-point control set)
 mod.ALPHA_RANGE = [FIXED, FIXED]
 old_n = getattr(mod, 'N_CONTROLS', None)
 mod.N_CONTROLS = 1
